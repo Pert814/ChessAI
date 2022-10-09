@@ -2,6 +2,7 @@ from inspect import BoundArguments
 from shutil import move
 from tkinter.tix import Tree
 from xml.dom.pulldom import START_ELEMENT
+from matplotlib.cbook import delete_masked_points
 
 from numpy import true_divide
 
@@ -27,7 +28,7 @@ class GameState():
         self.blackKingLocation = (0,4)
         self.checkMate = False
         self.staleMate = False
-        self.empassantPossible = ()
+        self.enpassantPossible = ()
         # self.inCheck = False
         # self.pin = []
         # self.checks = []
@@ -43,13 +44,15 @@ class GameState():
             self.blackKingLocation = (move.endRow,move.endCol)
         if move.isPawnPromotion:
             self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
+        #print(move.isEnpassantMoves)
         if move.isEnpassantMoves:
-            print('here')
-            self.board[move.startRow][move.endCol] == '--'
+            print('deleted')
+            self.board[move.startRow][move.endCol] = '--'
         if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
-            self.empassantPossible = ((move.startRow + move.endRow)//2 , move.startCol)
+            self.enpassantPossible = ((move.startRow + move.endRow)//2 , move.startCol)
+            #print(self.enpassantPossible)
         else:
-            self.empassantPossible = ()
+            self.enpassantPossible = ()
 
     def undoMove(self):
         if len(self.movelog) != 0:
@@ -64,12 +67,12 @@ class GameState():
         if move.isEnpassantMoves:
             self.board[move.endRow][move.endCol] = '--'
             self.board[move.startRow][move.endCol] = move.pieceCaptured
-            self.empassantPossible = (move.endRow, move.endCol)
+            self.enpassantPossible = (move.endRow, move.endCol)
         if move.pieceMoved[1] == 'p' and abs(move.startRow - move.endRow) == 2:
-            self.empassantPossible = ()
+            self.enpassantPossible = ()
 
     def getValidMoves(self):
-        tempEnpassantPossible = self.empassantPossible
+        tempEnpassantPossible = self.enpassantPossible
         moves = self.getAllPossibleMove()
         for i in range(len(moves)-1 , -1 , -1):
             self.makeMove(moves[i])
@@ -84,7 +87,7 @@ class GameState():
                 self.checkMate = True
             else:
                 self.staleMate = True
-        self.empassantPossible = tempEnpassantPossible
+        self.enpassantPossible = tempEnpassantPossible
         return moves
 
     def inCheck(self):
@@ -134,12 +137,12 @@ class GameState():
             if c > 0:
                 if self.board[r-1][c-1][0] == 'b':
                     moves.append(Move((r,c),(r-1,c-1),self.board))
-                elif (r-1,c-1) == self.empassantPossible:
+                elif (r-1,c-1) == self.enpassantPossible:
                     moves.append(Move((r,c),(r-1,c-1),self.board, isEnpassantMoves = True))
             if c < 7:
                 if self.board[r-1][c+1][0] == 'b':
                     moves.append(Move((r,c),(r-1,c+1),self.board))
-                elif (r-1,c+1) == self.empassantPossible:
+                elif (r-1,c+1) == self.enpassantPossible:
                     moves.append(Move((r,c),(r-1,c+1),self.board, isEnpassantMoves = True))
         else:
             if self.board[r+1][c] == '--':
@@ -149,12 +152,12 @@ class GameState():
             if c > 0:
                 if self.board[r+1][c-1][0] == 'w':
                     moves.append(Move((r,c),(r+1,c-1),self.board))
-                elif (r+1,c-1) == self.empassantPossible:
+                elif (r+1,c-1) == self.enpassantPossible:
                     moves.append(Move((r,c),(r+1,c-1),self.board, isEnpassantMoves = True))
             if c < 7:
                 if self.board[r+1][c+1][0] == 'w':
                     moves.append(Move((r,c),(r+1,c+1),self.board))
-                elif (r+1,c+1) == self.empassantPossible:
+                elif (r+1,c+1) == self.enpassantPossible:
                     moves.append(Move((r,c),(r+1,c+1),self.board, isEnpassantMoves = True))
 
     def getRockMoves(self, r, c, moves):
