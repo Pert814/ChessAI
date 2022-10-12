@@ -290,11 +290,11 @@ class GameState():
             if self.board[r][c+1] == '--' and self.board[r][c+2] == '--':
                 if not self.squareUnderAttack(r, c+1) and not self.squareUnderAttack(r, c+2):
                     moves.append(Move((r, c) , (r, c+2) , self.board , isCastleMove = True))
-        elif (self.whiteToMove and self.curentCastleRight.wQs) or (not self.whiteToMove and self.curentCastleRight.bQs ):
+        if (self.whiteToMove and self.curentCastleRight.wQs) or (not self.whiteToMove and self.curentCastleRight.bQs ):
             if self.board[r][c-1] == '--' and self.board[r][c-2] == '--' and self.board[r][c-3] == '--':
                 if not self.squareUnderAttack(r, c-1) and not self.squareUnderAttack(r, c-2):
+                    print('here')
                     moves.append(Move((r, c) , (r, c-2) , self.board , isCastleMove = True))
-
 
 class CastleRights():
     def __init__(self, wKs ,bKs ,wQs , bQs):
